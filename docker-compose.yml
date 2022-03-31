@@ -1,0 +1,48 @@
+version: '3.2'
+
+volumes:
+  influxdb-volume:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/etc/docker/docker-data/influxDB'
+
+services:
+  grafana:
+    image: grafana/grafana
+    volumes:
+      - ./grafana/provisionning:/etc/grafana/provisioning
+      - ./grafana/plugins:/var/lib/grafana/plugins
+    ports: 
+      - 3000:3000
+
+  influxdb:
+    image: influxdb:1.8
+    container_name: influxdb
+    ports:
+      - 8086:8086
+    volumes:
+      - influxdb-volume:/vol01/Docker/monitoring
+    environment:
+      - INFLUXDB_DB=telegraf
+      # - INFLUXDB_USER=telegraf
+      # - INFLUXDB_ADMIN_ENABLED=true
+      # - INFLUXDB_ADMIN_USER=admin
+      # - INFLUXDB_ADMIN_PASSWORD=Welcome1 
+  
+  tshark:
+    image: dveg/tsharktoinfluxdb
+    network_mode: host
+    cap_add:
+    - NET_ADMIN
+    - SYS_ADMIN
+    privileged: true
+    volumes:
+      - ./tsharklogs:/etc/tshark
+
+  telegraf:
+    image: telegraf
+    volumes:
+      - ./telegraf:/etc/telegraf
+      - ./tsharklogs:/etc/tshark

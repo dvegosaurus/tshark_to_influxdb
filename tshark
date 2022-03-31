@@ -1,0 +1,9 @@
+/etc/docker/tshark_influxdb/tshark.log {
+    notifempty
+    missingok
+    size 100k
+    copytruncate
+    start 0
+    rotate 15
+    compress
+}
